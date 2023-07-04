@@ -12,12 +12,6 @@ if [ -z "$action" ] ; then
 	echo
 	echo "Valid issue types: Bug/Epic/Story/Task"
 	echo
-#curl -D- -u username:password -X POST --data '{"fields":{"project":{"key": "PROJECTKEY"},"summary": "REST ye merry gentlemen.","description": "Creating of an issue using project keys and issue type names using the REST API","issuetype": {"name": "Bug"}}}' -H "Content-Type: application/json" https://mycompanyname.atlassian.net/rest/api/2/issue/
-
-#        curl -Ss -u $USER:$TOKEN --request GET \
-#                -H 'Accept: application/json' \
-#                -H 'Content-Type: application/json;charset=iso-8859-1' \
-#                "$URL/rest/api/2/project" | jq
 
 elif [ "$action" == "create" ] ; then
 	project="$2"
@@ -52,14 +46,16 @@ elif [ "$action" == "list" ] ; then
 	        p=$(curl -Ss -u $USER:$TOKEN --request GET \
 	                -H 'Accept: application/json' \
 			"$URL/rest/api/2/project")
-		echo "$p" | jq -r ' .[] | "\(.key) \(.name)"' 
+		projects=$(jq -r ' .[] | "\(.key) \(.name)"' <<< "$p")
+		echo "$projects"
+		echo $(wc -l <<< "$projects") projects
 	else
 	        i=$(curl -Ss -u $USER:$TOKEN --request GET \
 	                -H 'Accept: application/json' \
 			"$URL/rest/api/2/search?jql=project=$project")
-#		echo "$i"
-		echo "$i" | jq -r ' .issues[] | "\(.key) \(.fields.issuetype.name) [\(.fields.status.name)] \(.fields.summary)" '
-			#echo "$i" | jq -r ' .issues[] | [ .key .fields.issuetype.name ] '
+		issues=$(jq -r ' .issues[] | "\(.key) \(.fields.issuetype.name) [\(.fields.status.name)] \(.fields.summary)" ' <<< "$i")
+		echo "$issues"
+		echo $(wc -l <<< "$issues") issues
 	fi
 fi
 
